@@ -17,7 +17,7 @@ app.post("/todos", (req, res) => {
         res.send(doc)
     })
     .catch(e => {
-        console.log(e)
+        // console.log(e)
         res.status(400).send(e)
         
     })
@@ -26,3 +26,5 @@ app.post("/todos", (req, res) => {
 app.listen(3000, () =>{
     console.log("listening on port 3000")
 })
+
+module.exports = {app}
