@@ -31,6 +31,20 @@ app.get("/todos", (req, res) =>{
     })
 })
 
+app.get("/todos/:id", (req, res)=>{
+    var id = req.params.id
+    var isValid = mongoose.Types.ObjectId.isValid(id);
+    if(!isValid) return res.status(404).send("Id is not valid !")
+    else{
+        Todo.findById(id)
+            .then(result =>{
+                if(!result){ return res.status(400).send({message : "No ID found"})}
+                else{res.send(result)}
+            })
+            .catch(e => console.log(e))
+    }
+})
+
 app.listen(3000, () =>{
     console.log("listening on port 3000")
 })
