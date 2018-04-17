@@ -1,5 +1,6 @@
 var express = require("express");
 var bodyparser = require("body-parser");
+var _ = require("lodash");
 
 const {mongoose} = require("./db/mongoose")
 var {Todo} = require("./models/todo");
@@ -38,15 +39,61 @@ app.get("/todos/:id", (req, res)=>{
     else{
         Todo.findById(id)
             .then(result =>{
-                if(!result){ return res.status(400).send({message : "No ID found"})}
-                else{res.send(result)}
+                if(!result){ 
+                    console.log("PRINETE  EHEREER")
+                    return res.status(404).send({message : "No ID found"})
+                
+            }
+                else{res.send({todo : result})}
             })
-            .catch(e => console.log(e))
+            .catch(e => {console.log(e); res.send(e)})
     }
 })
 
-app.listen(3000, () =>{
-    console.log("listening on port 3000")
+app.patch("/todos/:id", (req, res) => {
+    var id = req.params.id;
+    var body = _.pick(req.body, ["text", "completed"]);
+
+    if(!ObjectID.isValid(id)){
+        return res.status(404).send();
+    }
+    if(_.isBoolean(body.completed) && body.completed){
+        body.completedAt = new Date().getTime();
+    }else{
+        body.completed = false;
+        body.completedAt = null;
+    }
+
+    Todo.findByIdAndUpdate(id, {$set : body}, {new : true})
+        .then(todo =>{
+            if(!todo){
+                return res.status(404).send();
+            }
+            res.send({todo})
+        })
+        .catch(e =>{
+            res.status(404).send()
+        })
+})
+
+app.post("/users", (req, res) =>{
+    var body = _.pick(req.body, ["email", "password"])
+    var user = new User(body);
+    user.save()
+        .then(() =>{
+            return user.generateAuthToken();
+            // res.send(user);
+        })
+        .then((token) =>{
+            res.header("x-auth", token).send(user)
+        })
+        .catch(e =>{
+            res.status(400).send(e)
+        })
+})
+
+app.listen(3030, () =>{
+    console.log("listening on port 3030")
 })
 
 module.exports = {app}
